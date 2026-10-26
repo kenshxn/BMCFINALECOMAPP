@@ -12,14 +12,17 @@ class PaymentService {
   }
 
   Future<Map<String, dynamic>> createInvoice(Map<Product, int> cart) async {
-    final res = await _supabase.functions.invoke(
-      'create-invoice',
-      body: {
-        'items': cart.entries
-            .map((e) => {'product_id': e.key.id, 'quantity': e.value})
-            .toList(),
-      },
-    );
+    // Example fix in Flutter / Dart
+final response = await supabase.functions.invoke(
+  'create-checkout', // or your function name
+  body: {
+    // ⚠️ Make sure 'amount' is included and correctly formatted!
+    // Payment gateways usually expect the amount in centavos (e.g., 170.00 PHP = 17000) or as a double.
+    'amount': (totalPrice * 100).toInt(), // e.g., 17000 for ₱170.00
+    'items': cartItems,
+    // ...other required payload parameters
+  },
+);
     if (res.status < 200 || res.status >= 300 || res.data is! Map) {
       throw Exception(
         'Could not create checkout. Check the Supabase Edge Function setup.',
